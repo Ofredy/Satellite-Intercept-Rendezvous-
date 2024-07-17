@@ -24,10 +24,10 @@ import math
 import numpy as np
 
 # Our Imports
-from sims_constants import *
+from project_predict_constants import *
 
 
-class ProjectPredict:
+class Satellite:
 
     def __init__(self, position_vector: list, velocity_vector: list):
         
@@ -35,6 +35,10 @@ class ProjectPredict:
         self.v = np.expand_dims(np.array(velocity_vector), axis=0)
 
         self._find_orbital_parameters()
+
+        self._find_trajectory_type()
+
+        self._find_closest_approach_or_impact()
 
     def _find_orbital_parameters(self):
 
@@ -71,8 +75,35 @@ class ProjectPredict:
         if np.vdot(self.r, self.v) < 0:
             self.v_0 = 2 * math.pi - self.v_o
 
+    def _find_trajectory_type(self):
+
+        e_norm = np.linalg.norm(self.e)
+
+        if e_norm == 0:
+            self.trajectory_type = "circular"
+
+        elif 0 < e_norm and e_norm < 1:
+            self.trajectory_type = "elliptical"
+            
+        elif e_norm == 1:
+            self.trajectory_type = "parabolic"
+
+        elif e_norm > 1:
+            self.trajectory_type = "hyperbolic"
+
+        elif np.linalg.norm(self.h) == 0:
+            self.trajectory_type = "rectilinear"
+
+        else:
+            self.trajectory_type = "undefined"
+
+    def _find_closest_approach_or_impact(self):
+
+        pass
+
 
 if __name__ == "__main__":
 
-    predict = ProjectPredict( [3*math.sqrt(3)/4, 3/4, 0], [-1/(2*math.sqrt(2)), math.sqrt(3)/(2*math.sqrt(2)), 1/math.sqrt(2)] )
+    satellite = Satellite( [3*math.sqrt(3)/4, 3/4, 0], [-1/(2*math.sqrt(2)), math.sqrt(3)/(2*math.sqrt(2)), 1/math.sqrt(2)] )
+
     
