@@ -38,7 +38,7 @@ class Satellite:
 
         self._find_trajectory_type()
 
-        self._find_closest_approach_or_impact()
+        self._find_impact_or_closest_approach()
 
     def _find_orbital_parameters(self):
 
@@ -97,7 +97,7 @@ class Satellite:
         else:
             self.trajectory_type = "undefined"
 
-    def _find_closest_approach_or_impact(self):
+    def _find_impact_or_closest_approach(self):
 
         pass
 
