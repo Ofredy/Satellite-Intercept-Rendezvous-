@@ -31,19 +31,19 @@ class Satellite:
 
     def __init__(self, position_vector: list, velocity_vector: list):
         
-        self.r = np.expand_dims(np.array(position_vector), axis=0)
-        self.v = np.expand_dims(np.array(velocity_vector), axis=0)
+        self.r = np.array(position_vector)
+        self.v = np.array(velocity_vector)
 
         self._find_orbital_parameters()
 
         self._find_trajectory_type()
 
-        self._find_impact_or_closest_approach()
+        #self._find_impact_or_closest_approach()
 
     def _find_orbital_parameters(self):
 
         # angular momentum
-        self.h = np.cross(self.r, self.v)
+        self.h = np.cross(self.r.flatten(), self.v.flatten()).reshape(3, 1)
 
         # semi-latus rectus 
         self.p = (np.linalg.norm(self.h)**2) / GRAVITATIONAL_PARAMETER
@@ -55,18 +55,18 @@ class Satellite:
         self.i = math.acos(np.vdot(self.h, k_unit) / np.linalg.norm(self.h))
 
         # node vector
-        self.n = np.cross(k_unit, self.h)
+        self.n = np.cross(k_unit.flatten(), self.h.flatten()).reshape(3, 1)
 
         # longitude of ascending node
         self.omega = math.acos(np.vdot(self.n, i_unit) / np.linalg.norm(self.n))
 
-        if self.n[0][j_index] < 0:
+        if self.n[j_index][0] < 0:
             self.omega = 2 * math.pi - self.omega
 
         # argument of periapsis
         self.w = math.acos(np.vdot(self.n, self.e) / (np.linalg.norm(self.n) * np.linalg.norm(self.e)))
 
-        if self.e[0][k_index] < 0:
+        if self.e[k_index][0] < 0:
             self.w = 2 * math.pi - self.w
 
         # true anomaly
@@ -99,11 +99,28 @@ class Satellite:
 
     def _find_impact_or_closest_approach(self):
 
-        pass
+        # solving for position vector at perigee
+        true_anomaly_perigee = 0
+        perigee_radius = self.p / ( 1 + self.e * math.cos(true_anomaly_perigee))
 
+        r_p_perifocal_coordinate = np.expand_dims(np.array([perigee_radius*math.cos(true_anomaly_perigee), perigee_radius*math.sin(true_anomaly_perigee), 0]))
+        self._solve_for_perifocal_to_ijk_matrix()
+
+        r_p = self.perifocal_to_ijk_matrix * r_p_perifocal_coordinate
+
+        # checking to see if an impact occured
+        if np.linalg.norm(r_p) < 1:
+            self.impact = True
+            self._solve_for_impact_point()
+
+    def _solve_for_perifocal_to_ijk_matrix(self):
+        
+        self.perifocal_to_ijk_matrix = np.array([[ math.cos(self.omega)*math.cos(self.w)-math.sin(self.omega)*math.sin(self.w)*math.cos(self.i), -1*math.cos(self.omega)]])
+
+    def _solve_for_impact_point(self):
+
+        pass
 
 if __name__ == "__main__":
 
-    satellite = Satellite( [3*math.sqrt(3)/4, 3/4, 0], [-1/(2*math.sqrt(2)), math.sqrt(3)/(2*math.sqrt(2)), 1/math.sqrt(2)] )
-
-    
+    satellite = Satellite( [[3*math.sqrt(3)/4], [3/4], [0]], [[-1/(2*math.sqrt(2))], [math.sqrt(3)/(2*math.sqrt(2))], [1/math.sqrt(2)]] )
