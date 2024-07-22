@@ -43,19 +43,19 @@ class Satellite:
     def _find_orbital_parameters(self):
 
         # angular momentum
-        self.h = np.cross(self.r.flatten(), self.v.flatten()).reshape(3, 1)
+        self.h = np.cross(self.r, self.v)
 
         # semi-latus rectus 
         self.p = (np.linalg.norm(self.h)**2) / GRAVITATIONAL_PARAMETER
 
         # eccentricity
-        self.e = (1/GRAVITATIONAL_PARAMETER) * ((np.linalg.norm(self.v)**2 - (GRAVITATIONAL_PARAMETER/np.linalg.norm(self.r))) * self.r - (np.vdot(self.r, self.v)) * self.v)
+        self.e = (np.linalg.norm(self.v)**2 - (GRAVITATIONAL_PARAMETER/np.linalg.norm(self.r))) * self.r - np.dot(self.r, self.v) * self.v
 
         # inclination
-        self.i = math.acos(np.vdot(self.h, k_unit) / np.linalg.norm(self.h))
+        self.i = math.acos(np.dot(self.h, k_unit) / np.linalg.norm(self.h))
 
         # node vector
-        self.n = np.cross(k_unit.flatten(), self.h.flatten()).reshape(3, 1)
+        self.n = np.cross(k_unit, self.h)
 
         # longitude of ascending node and argument of periapsis
         if abs(self.i) < 1e-10 or abs(self.i - math.pi) < 1e-10:
@@ -65,20 +65,20 @@ class Satellite:
 
         else:
             # non equatorial orbit
-            self.omega = math.acos(np.vdot(self.n, i_unit) / np.linalg.norm(self.n))
+            self.omega = math.acos(np.dot(self.n, i_unit) / np.linalg.norm(self.n))
 
-            if self.n[j_index][0] < 0:
+            if self.n[j_index] < 0:
                 self.omega = 2 * math.pi - self.omega
 
-            self.w = math.acos(np.vdot(self.n, self.e) / (np.linalg.norm(self.n) * np.linalg.norm(self.e)))
+            self.w = math.acos(np.dot(self.n, self.e) / (np.linalg.norm(self.n) * np.linalg.norm(self.e)))
 
-            if self.e[k_index][0] < 0:
+            if self.e[k_index] < 0:
                 self.w = 2 * math.pi - self.w
 
         # true anomaly
-        self.v_0 = math.acos(np.vdot(self.e, self.r) / (np.linalg.norm(self.e) * np.linalg.norm(self.r)))
+        self.v_0 = math.acos(np.dot(self.e, self.r) / (np.linalg.norm(self.e) * np.linalg.norm(self.r)))
 
-        if np.vdot(self.r, self.v) < 0:
+        if np.dot(self.r, self.v) < 0:
             self.v_0 = 2 * math.pi - self.v_0
 
     def _find_trajectory_type(self):
@@ -105,24 +105,33 @@ class Satellite:
 
     def _find_impact_or_closest_approach(self):
 
-        # solving for position vector at perigee
-        true_anomaly_perigee = self.v_0
-        self.perigee_radius = self.p / ( 1 + np.linalg.norm(self.e) * math.cos(true_anomaly_perigee))
+        # solving for position vector at perigee or impact
+        self.impact = False
+        self.perigee_or_impact_true_anomaly = 0
+        self.perigee_radius = self.p / ( 1 + np.linalg.norm(self.e) * math.cos(self.perigee_or_impact_true_anomaly))
 
-        self.r_p_perifocal = np.array([[self.perigee_radius*math.cos(true_anomaly_perigee)], 
-                                       [self.perigee_radius*math.sin(true_anomaly_perigee)], 
-                                       [0]])
+        self.r_p_or_impact_perifocal = np.array([self.perigee_radius*math.cos(self.perigee_or_impact_true_anomaly), 
+                                       self.perigee_radius*math.sin(self.perigee_or_impact_true_anomaly), 
+                                       0])
 
-        self._solve_for_perifocal_to_ijk_matrix()
+        self._solve_for_p_or_impacterifocal_to_ijk_matrix()
 
-        self.r_p = self.perifocal_to_ijk_matrix @ self.r_p_perifocal
+        self.r_p_or_impact = np.dot(self.perifocal_to_ijk_matrix, self.r_p_or_impact_perifocal)
 
         # checking to see if an impact occured
-        if np.linalg.norm(self.r_p) < 1:
+        if np.linalg.norm(self.r_p_or_impact) < 1:
             self.impact = True
             self._solve_for_impact_point()
+            return
 
-    def _solve_for_perifocal_to_ijk_matrix(self):
+        # solving for velocity at perigee
+        self.v_p_or_impact_perifocal = np.array([math.sqrt(1/self.p) * -1 * math.sin(self.perigee_or_impact_true_anomaly),
+                                      np.linalg.norm(self.e) + math.cos(self.perigee_or_impact_true_anomaly),
+                                      0])
+
+        self.v_p_or_impact = np.dot(self.perifocal_to_ijk_matrix, self.v_p_or_impact_perifocal) 
+
+    def _solve_for_p_or_impacterifocal_to_ijk_matrix(self):
         
         self.perifocal_to_ijk_matrix = np.array([
                     [
@@ -144,16 +153,44 @@ class Satellite:
 
     def _solve_for_impact_point(self):
 
-        self.impact_true_anomaly = math.acos((self.p-1)/np.linalg.norm(self.e))
+        self.perigee_or_impact_true_anomaly = math.acos((self.p-1)/np.linalg.norm(self.e))
 
-        self.r_impact_perifocal = np.array([[self.perigee_radius*math.cos(self.impact_true_anomaly)], 
-                                            [self.perigee_radius*math.sin(self.impact_true_anomaly)], 
-                                            [0]])
+        self.r_p_or_impact_perifocal = np.array([self.perigee_radius*math.cos(self.perigee_or_impact_true_anomaly), 
+                                            self.perigee_radius*math.sin(self.perigee_or_impact_true_anomaly), 
+                                            0])
         
-        self.r_impact = self.perifocal_to_ijk_matrix @ self.r_impact_perifocal
+        self.r_p_or_impact = self.perifocal_to_ijk_matrix @ self.r_p_or_impact
+
+        self.v_p_or_impact_perifocal = np.array([math.sqrt(1/self.p) * -1 * math.sin(self.perigee_or_impact_true_anomaly),
+                                       np.linalg.norm(self.e) + math.cos(self.perigee_or_impact_true_anomaly),
+                                       0])
+
+        self.v_p_or_impact = np.dot(self.perifocal_to_ijk_matrix, self.v_p_or_impact_perifocal)
+
+    def _find_time_of_flight(self):
+        
+        # First determine the change in true anomaly from initial position to perigee or impact
+        if self.v[j_index] > 0:
+            self.orbit_direction = "prograde"
+
+        else:
+            self.orbit_direction = "retrograde"
+
+
+            
+
 
 if __name__ == "__main__":
 
-    satellite = Satellite( [[-0.1], [1], [0]], [[-1.2], [-0.01], [0]] )
+    test_case = 0
 
-    import pdb; pdb.set_trace()
+    satellite = Satellite( test_case_positions[test_case], test_case_velocities[test_case] )
+
+    print("\ntest_case %d" % (test_case))
+
+    print("satellite.r [ %.4f, %.4f, %.4f ] " % (satellite.r[0], satellite.r[1], satellite.r[2]))
+    print("satellite.v [ %.4f, %.4f, %.4f ] " % (satellite.v[0], satellite.v[1], satellite.v[2]))
+
+    print("satellite.r_p_or_impact [ %.4f, %.4f, %.4f ] " % (satellite.r_p_or_impact[0], satellite.r_p_or_impact[1], satellite.r_p_or_impact[2]))
+    print("satellite.v_p_or_impact [ %.4f, %.4f, %.4f ] " % (satellite.v_p_or_impact[0], satellite.v_p_or_impact[1], satellite.v_p_or_impact[2]))
+    print("satellite trajectory type %s\n\n" % (satellite.trajectory_type))
