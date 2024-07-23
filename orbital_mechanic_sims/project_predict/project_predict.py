@@ -113,8 +113,8 @@ class Satellite:
         self.perigee_radius = ( self.a * ( 1 - np.linalg.norm(self.e)**2 ) ) / ( 1 + np.linalg.norm(self.e) * np.cos(self.perigee_or_impact_nu))
 
         self.r_p_or_impact_perifocal = np.array([self.perigee_radius*np.cos(self.perigee_or_impact_nu), 
-                                       self.perigee_radius*np.sin(self.perigee_or_impact_nu), 
-                                       0])
+                                                 self.perigee_radius*np.sin(self.perigee_or_impact_nu), 
+                                                 0])
 
         self._solve_for_p_or_impacterifocal_to_ijk_matrix()
 
@@ -128,8 +128,8 @@ class Satellite:
 
         # solving for velocity at perigee
         self.v_p_or_impact_perifocal = np.array([math.sqrt(1/self.p) * -1 * np.sin(self.perigee_or_impact_nu),
-                                      np.linalg.norm(self.e) + np.cos(self.perigee_or_impact_nu),
-                                      0])
+                                                 np.linalg.norm(self.e) + np.cos(self.perigee_or_impact_nu),
+                                                 0])
 
         self.v_p_or_impact = np.dot(self.perifocal_to_ijk_matrix, self.v_p_or_impact_perifocal) 
 
@@ -171,12 +171,35 @@ class Satellite:
 
     def _find_time_of_flight(self):
         
-        # First determine the change in true anomaly from initial position to perigee or impact
-        if self.v[j_index] > 0:
-            self.orbit_direction = "prograde"
+        if self.trajectory_type == "circular":
+            self._time_of_flight_circular()
+
+        elif self.trajectory_type == "elliptical":
+            self._time_of_flight_elliptical()
+
+        elif self.trajectory_type == "parabolic":
+            self._time_of_flight_parabolic()
+
+        elif self.trajectory_type == "hyperbolic":
+            self._time_of_flight_hyperbolic()
 
         else:
-            self.orbit_direction = "retrograde"
+            self.time_of_flight = None
+
+    def _time_of_flight_circular(self):
+        pass
+
+    def _time_of_flight_elliptical(self):
+
+        pass
+
+    def _time_of_flight_parabolic(self):
+
+        pass
+
+    def _time_of_flight_hyperbolic(self):
+
+        pass
 
     def print_results():
 
