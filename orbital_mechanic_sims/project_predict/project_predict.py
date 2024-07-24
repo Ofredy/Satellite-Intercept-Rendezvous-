@@ -32,8 +32,8 @@ class Satellite:
 
     def __init__(self, position_vector: list, velocity_vector: list):
         
-        self.r = np.array(position_vector)
-        self.v = np.array(velocity_vector)
+        self.r_0 = np.array(position_vector)
+        self.v_0 = np.array(velocity_vector)
 
         self._find_orbital_parameters()
         self._find_trajectory_type()
@@ -43,13 +43,13 @@ class Satellite:
     def _find_orbital_parameters(self):
 
         # angular momentum
-        self.h = np.cross(self.r, self.v)
+        self.h = np.cross(self.r_0, self.v_0)
 
         # semi-latus rectus 
         self.p = (np.linalg.norm(self.h)**2) / GRAVITATIONAL_PARAMETER
 
         # eccentricity
-        self.e = (np.linalg.norm(self.v)**2 - (GRAVITATIONAL_PARAMETER/np.linalg.norm(self.r))) * self.r - np.dot(self.r, self.v) * self.v
+        self.e = (np.linalg.norm(self.v_0)**2 - (GRAVITATIONAL_PARAMETER/np.linalg.norm(self.r_0))) * self.r_0 - np.dot(self.r_0, self.v_0) * self.v_0
 
         # semi-major axis
         self.a = self.p / ( 1 - np.linalg.norm(self.e)**2 )
@@ -79,9 +79,9 @@ class Satellite:
                 self.w = 2 * math.pi - self.w
 
         # true anomaly
-        self.nu_0 = np.arccos(np.dot(self.e, self.r) / (np.linalg.norm(self.e) * np.linalg.norm(self.r)))
+        self.nu_0 = np.arccos(np.dot(self.e, self.r_0) / (np.linalg.norm(self.e) * np.linalg.norm(self.r_0)))
 
-        if np.dot(self.r, self.v) < 0:
+        if np.dot(self.r_0, self.v_0) < 0:
             self.nu_0 = 2 * math.pi - self.nu_0
 
     def _find_trajectory_type(self):
@@ -232,8 +232,8 @@ class Satellite:
     def print_results(self):
 
         print("\ntest_case %d" % (test_case))
-        print("satellite.r [ %.4f, %.4f, %.4f ] " % (self.r[0], self.r[1], self.r[2]))
-        print("satellite.v [ %.4f, %.4f, %.4f ] " % (self.v[0], self.v[1], self.v[2]))
+        print("satellite.r [ %.4f, %.4f, %.4f ] " % (self.r_0[0], self.r_0[1], self.r_0[2]))
+        print("satellite.v [ %.4f, %.4f, %.4f ] " % (self.v_0[0], self.v_0[1], self.v_0[2]))
 
         print("\ntrajectory type %s" % (self.trajectory_type))
 
