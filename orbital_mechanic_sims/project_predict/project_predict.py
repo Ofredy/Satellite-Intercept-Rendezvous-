@@ -195,7 +195,11 @@ class Satellite:
 
     def _time_of_flight_circular(self):
         
-        pass
+        if self.nu_0 > self.perigee_or_impact_nu:
+            self.time_of_flight = ( 2*math.pi - ( self.nu_0 - self.perigee_or_impact_nu ) ) / ( math.sqrt( 1 / self.a**3 ) )
+
+        else:
+            self.time_of_flight = ( self.perigee_or_impact_nu - self.nu_0 ) / ( math.sqrt( 1 / self.a**3 ) )
 
     def _time_of_flight_elliptical(self):
 
