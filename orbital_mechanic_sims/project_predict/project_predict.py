@@ -19,6 +19,7 @@
 
 # System Imports
 import math
+import datetime
 
 # Library Imports
 import numpy as np
@@ -171,6 +172,12 @@ class Satellite:
 
     def _find_time_of_flight(self):
         
+        if self.nu_0 > self.perigee_or_impact_nu:
+            self.d_nu = 2*math.pi + abs(self.perigee_or_impact_nu - self.nu_0)
+
+        else:
+            self.d_nu = abs(self.perigee_or_impact_nu - self.nu_0)
+
         if self.trajectory_type == "circular":
             self._time_of_flight_circular()
 
@@ -187,23 +194,60 @@ class Satellite:
             self.time_of_flight = None
 
     def _time_of_flight_circular(self):
+        
         pass
 
     def _time_of_flight_elliptical(self):
 
-        pass
+        # calculating eccentric anomalies & change in true anomaly
+        self.E_0 = np.arccos( ( np.linalg.norm(self.e) + np.cos(self.nu_0) ) / ( 1 + np.linalg.norm(self.e) * np.cos(self.nu_0) ) )
+        self.E = np.arccos( ( np.linalg.norm(self.e) + np.cos(self.perigee_or_impact_nu) ) / ( 1 + np.linalg.norm(self.e) * np.cos(self.perigee_or_impact_nu) ) )
+
+        if self.nu_0 > self.perigee_or_impact_nu:
+            self.time_of_flight = math.sqrt( self.a**3 ) * ( 2*math.pi + ( self.E - np.linalg.norm(self.e)*np.sin(self.E) ) - ( self.E_0 - np.linalg.norm(self.e)*np.sin(self.E_0) ) )  
+
+        else:
+            self.time_of_flight = math.sqrt( self.a**3 ) * ( ( self.E - np.linalg.norm(self.e)*np.sin(self.E) ) - ( self.E_0 - np.linalg.norm(self.e)*np.sin(self.E_0) ) )
 
     def _time_of_flight_parabolic(self):
 
-        pass
+        # calculating parabolic eccentric anomalies & change in true anomaly        
+        self.D_0 = math.sqrt( self.p ) * np.tan( self.nu_0 / 2 )
+        self.D = math.sqrt( self.p ) * np.tan( self.perigee_or_impact_nu / 2 )
+
+        self.time_of_flight = ( 1 / 2 ) * ( ( self.p*self.D + (1/3)*self.D**3 ) - ( self.p*self.D_0 + (1/3)*self.D_0**3 ) )
 
     def _time_of_flight_hyperbolic(self):
 
-        pass
+        # calculating hyperbolic eccentric anomalies & change in true anomaly 
+        self.F_0 = np.arccosh( ( np.linalg.norm(self.e) + np.cos(self.nu_0) ) / ( 1 + np.linalg.norm(self.e)*np.cos(self.nu_0) ) )
+        self.F = np.arccosh( ( np.linalg.norm(self.e) + np.cos(self.perigee_or_impact_nu) ) / ( 1 + np.linalg.norm(self.e)*np.cos(self.perigee_or_impact_nu) ) )
 
-    def print_results():
+        self.time_of_flight = math.sqrt( ( -1 * self.a )**3 ) * ( ( np.linalg.norm(self.e)*np.sinh(self.F)-self.F ) - ( np.linalg.norm(self.e)*np.sinh(self.F_0)-self.F_0 ) )
 
-        pass
+    def print_results(self):
+
+        print("\ntest_case %d" % (test_case))
+        print("satellite.r [ %.4f, %.4f, %.4f ] " % (self.r[0], self.r[1], self.r[2]))
+        print("satellite.v [ %.4f, %.4f, %.4f ] " % (self.v[0], self.v[1], self.v[2]))
+
+        print("\ntrajectory type %s" % (self.trajectory_type))
+
+        if self.impact:
+            print("impact occured")
+            
+            print("position at impact [ %.4f, %.4f, %.4f ]" % (self.r_p_or_impact[0], self.r_p_or_impact[1], self.r_p_or_impact[2]))
+            print("velocity at impact [ %.4f, %.4f, %.4f ]" % (self.v_p_or_impact[0], self.v_p_or_impact[1], self.v_p_or_impact[2]))
+            
+            print("time till impact is %s" % (datetime.timedelta(seconds=self.time_of_flight*TU_TO_SEC)))
+            print("change in true anomaly is %.4f" % (math.degrees(self.d_nu)))
+        
+        else:
+            print("position at perigee [ %.4f, %.4f, %.4f ]" % (self.r_p_or_impact[0], self.r_p_or_impact[1], self.r_p_or_impact[2]))
+            print("velocity at perigee [ %.4f, %.4f, %.4f ]" % (self.v_p_or_impact[0], self.v_p_or_impact[1], self.v_p_or_impact[2]))
+
+            print("time till perigee is %s" % (datetime.timedelta(seconds=self.time_of_flight*TU_TO_SEC)))
+            print("change in true anomaly is %.4f" % (math.degrees(self.d_nu)))
 
 
 if __name__ == "__main__":
@@ -211,12 +255,4 @@ if __name__ == "__main__":
     test_case = 0
 
     satellite = Satellite( test_case_positions[test_case], test_case_velocities[test_case] )
-
-    print("\ntest_case %d" % (test_case))
-
-    print("satellite.r [ %.4f, %.4f, %.4f ] " % (satellite.r[0], satellite.r[1], satellite.r[2]))
-    print("satellite.v [ %.4f, %.4f, %.4f ] " % (satellite.v[0], satellite.v[1], satellite.v[2]))
-
-    print("satellite.r_p_or_impact [ %.4f, %.4f, %.4f ] " % (satellite.r_p_or_impact[0], satellite.r_p_or_impact[1], satellite.r_p_or_impact[2]))
-    print("satellite.v_p_or_impact [ %.4f, %.4f, %.4f ] " % (satellite.v_p_or_impact[0], satellite.v_p_or_impact[1], satellite.v_p_or_impact[2]))
-    print("satellite trajectory type %s\n\n" % (satellite.trajectory_type))
+    satellite.print_results()
