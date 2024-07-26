@@ -52,7 +52,11 @@ class Satellite:
         self.e = (np.linalg.norm(self.v_0)**2 - (GRAVITATIONAL_PARAMETER/np.linalg.norm(self.r_0))) * self.r_0 - np.dot(self.r_0, self.v_0) * self.v_0
 
         # semi-major axis
-        self.a = self.p / ( 1 - np.linalg.norm(self.e)**2 )
+        if abs( np.linalg.norm(self.e) - 1 ) < 1e-10:
+            self.lamda = ( 1 - np.linalg.norm(self.e)**2 ) / self.p
+
+        else:
+            self.a = self.p / ( 1 - np.linalg.norm(self.e)**2 )
 
         # inclination
         self.i = np.arccos(np.dot(self.h, k_unit) / np.linalg.norm(self.h))
@@ -111,7 +115,7 @@ class Satellite:
         # solving for position vector at perigee or impact
         self.impact = False
         self.perigee_or_impact_nu = 0
-        self.perigee_radius = ( self.a * ( 1 - np.linalg.norm(self.e)**2 ) ) / ( 1 + np.linalg.norm(self.e) * np.cos(self.perigee_or_impact_nu))
+        self.perigee_radius = self.p / ( 1 + np.linalg.norm(self.e) * np.cos(self.perigee_or_impact_nu))
 
         self.r_p_or_impact_perifocal = np.array([self.perigee_radius*np.cos(self.perigee_or_impact_nu), 
                                                  self.perigee_radius*np.sin(self.perigee_or_impact_nu), 
