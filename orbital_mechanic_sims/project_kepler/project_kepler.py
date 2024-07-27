@@ -1,7 +1,7 @@
 ####################### File Description #######################
 # Given the position and velocity vectors of a satellite at a particular
 # instant of time, you are to determine the position and velocity vectors
-# after an interval of time, 61.
+# after an interval of time, t
 
 
 # System imports
@@ -173,7 +173,7 @@ class Kepler():
         self.f = 1 - ( self.x_n**2/self.r_0_norm )*self.c_n
         self.g = self.t - self.x_n**3*self.s_n
 
-        self.r = self.f * self.r_0 + self.g + self.v_0
+        self.r = self.f * self.r_0 + self.g * self.v_0
 
         # solving for v
         self.f_p = ( 1 / (self.r_0_norm*np.linalg.norm(self.r)) ) * self.x_n * ( self.z_n*self.s_n - 1)
@@ -184,7 +184,11 @@ class Kepler():
     def _step_summary(self):
 
         # only used for debugging
-        print("x_%d=%.5f, t_%d=%.5f" % (self.counter, self.x_n, self.counter, self.t_n))
+        print("x_%d = %.5f, t_%d = %.5f, dt_%d = %.5f" % (self.counter, self.x_n, self.counter, self.t_n, self.counter, self.dt_n))
+
+    def _f_and_g_check(self):
+
+        print("this should be equal to 1: f*g_p - f_p*g = %.5f" % ( self.f*self.g_p - self.f_p*self.g ))
 
     def _energy_check(self):
 
@@ -218,8 +222,9 @@ class Kepler():
                 self._solve_for_r_and_v()
 
                 print("solution converged")
-                print("position is [ %.4f, %.4f, %.4f ]" % (self.r[0], self.r[1], self.r[2]))
-                print("velocity is [ %.4f, %.4f, %.4f ]" % (self.v[0], self.v[1], self.v[2]))
+                print("position is [ %.8f, %.8f, %.8f ]" % (self.r[0], self.r[1], self.r[2]))
+                print("velocity is [ %.8f, %.8f, %.8f ]" % (self.v[0], self.v[1], self.v[2]))
+                self._f_and_g_check()
                 self._energy_check()
                 return
 
@@ -227,14 +232,16 @@ class Kepler():
                 print("kepler problem did not converge")
                 return
 
-            self._step_summary()
-
             self._solve_for_dt_n()
             self._update_x()
             self.counter += 1
 
+            self._step_summary()
+
 
 if __name__ == "__main__":
 
-    satellite = Kepler( [0, 0, -0.5], [0, 2, 0], 10**6 )
+    test_case_idx = 1
+
+    satellite = Kepler( test_case_positions[test_case_idx], test_case_velocities[test_case_idx], test_case_t[test_case_idx] )
     satellite.kepler_problem()
