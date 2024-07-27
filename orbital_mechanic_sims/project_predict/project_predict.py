@@ -83,10 +83,18 @@ class Satellite:
                 self.w = 2 * math.pi - self.w
 
         # true anomaly
-        self.nu_0 = np.arccos(np.dot(self.e, self.r_0) / (np.linalg.norm(self.e) * np.linalg.norm(self.r_0)))
+        if np.linalg.norm(self.e) == 0:
+            # circular orbit
+            self.nu_0 = np.dot(self.r_0, self.v_0) / (np.linalg.norm(self.r_0)*np.linalg.norm(self.v_0))
 
-        if np.dot(self.r_0, self.v_0) < 0:
-            self.nu_0 = 2 * math.pi - self.nu_0
+            if np.dot(self.r_0, self.v_0) < 0:
+                self.nu_0 = 2 * math.pi - self.nu_0
+    
+        else:
+            self.nu_0 = np.arccos(np.dot(self.e, self.r_0) / (np.linalg.norm(self.e) * np.linalg.norm(self.r_0)))
+
+            if np.dot(self.r_0, self.v_0) < 0:
+                self.nu_0 = 2 * math.pi - self.nu_0
 
     def _find_trajectory_type(self):
 
