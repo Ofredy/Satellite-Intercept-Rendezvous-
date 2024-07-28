@@ -161,5 +161,6 @@ cython_debug/
 #  option (not recommended) you can uncomment the following to ignore the entire idea folder.
 #.idea/
 
-# Ignoring virutal env folder
+# Ignored folders created by me
 om_sims/
+errors/
