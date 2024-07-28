@@ -13,8 +13,6 @@ k_unit = np.array([0, 0, 1])
 
 
 ###### Unit constants ######
-GRAVITATIONAL_PARAMETER = 1  
-
 TU_TO_SEC = (1 / 1.239446309e-3)
 
 
