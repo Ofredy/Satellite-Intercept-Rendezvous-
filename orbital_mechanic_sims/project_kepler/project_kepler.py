@@ -32,54 +32,51 @@ class Kepler():
         self.h = np.cross(self.r_0, self.v_0)
 
         # semi-latus rectus 
-        self.p = (np.linalg.norm(self.h)**2) / GRAVITATIONAL_PARAMETER
+        self.p = np.linalg.norm(self.h)**2
 
         # eccentricity
-        self.e = (np.linalg.norm(self.v_0)**2 - (GRAVITATIONAL_PARAMETER/np.linalg.norm(self.r_0))) * self.r_0 - np.dot(self.r_0, self.v_0) * self.v_0
+        self.e = (np.linalg.norm(self.v_0)**2 - (1/np.linalg.norm(self.r_0))) * self.r_0 - np.dot(self.r_0, self.v_0) * self.v_0
 
-        # semi-major axis
-        if abs( np.linalg.norm(self.e) - 1 ) < 1e-10:
-            self.lamda = ( 1 - np.linalg.norm(self.e)**2 ) / self.p
-
-        else:
-            self.a = self.p / ( 1 - np.linalg.norm(self.e)**2 )
+        # semi-major axis -> 1 / a = lamda
+        self.lamda = ( 1 - np.linalg.norm(self.e)**2 ) / self.p
 
         # inclination
-        self.i = np.arccos(np.dot(self.h, k_unit) / np.linalg.norm(self.h))
+        self.i = np.arccos( self.h[k_index] / np.linalg.norm(self.h) )
 
         # node vector
         self.n = np.cross(k_unit, self.h)
 
-        # longitude of ascending node and argument of periapsis
-        if abs(self.i) < 1e-10 or abs(self.i - math.pi) < 1e-10:
-            # equatorial orbit -> omega & w become undefined so we set them to zero for future calculations
+        # longitude of ascending node 
+        if abs(np.linalg.norm(self.n)) < 1e-5:
+            # ascending node is undefined
             self.omega = 0
+
+        else:
+            self.omega = np.arccos( self.n[i_index] / np.linalg.norm(self.n) )
+
+            if self.n[j_index] < 0:
+                self.omega = 2 * np.pi - self.omega
+
+        # argument of perigee
+        if abs(np.linalg.norm(self.n)) < 1e-5 or abs(np.linalg.norm(self.e)) < 1e-5:
+            # argument of perigee undefined
             self.w = 0
 
         else:
-            # non equatorial orbit
-            self.omega = np.arccos(np.dot(self.n, i_unit) / np.linalg.norm(self.n))
-
-            if self.n[j_index] < 0:
-                self.omega = 2 * math.pi - self.omega
-
-            self.w = np.arccos(np.dot(self.n, self.e) / (np.linalg.norm(self.n) * np.linalg.norm(self.e)))
+            self.w = np.arccos( np.dot(self.n, self.e) / ( np.linalg.norm(self.n)*np.linalg.norm(self.e) ) )    
 
             if self.e[k_index] < 0:
-                self.w = 2 * math.pi - self.w
+                self.w = 2 * np.pi - self.w
 
-        # true anomaly
-        if np.linalg.norm(self.e) == 0:
+        # True anomaly
+        if abs(np.linalg.norm(self.e)) < 1e-5:
             # circular orbit
             self.nu_0 = np.dot(self.r_0, self.v_0) / (np.linalg.norm(self.r_0)*np.linalg.norm(self.v_0))
 
-            if np.dot(self.r_0, self.v_0) < 0:
-                self.nu_0 = 2 * math.pi - self.nu_0
-    
         else:
-            self.nu_0 = np.arccos(np.dot(self.e, self.r_0) / (np.linalg.norm(self.e) * np.linalg.norm(self.r_0)))
+            self.nu_0 = np.arccos( np.dot(self.e, self.r_0) / ( np.linalg.norm(self.e)*np.linalg.norm(self.r_0) ) )
 
-            if np.dot(self.r_0, self.v_0) < 0:
+        if np.dot(self.r_0, self.v_0) < 0:
                 self.nu_0 = 2 * math.pi - self.nu_0
 
     def _find_trajectory_type(self):
