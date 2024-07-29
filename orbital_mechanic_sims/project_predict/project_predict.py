@@ -167,8 +167,6 @@ class Satellite:
 
         self.nu = np.arccos( (self.p-1) / np.linalg.norm(self.e) )
 
-        self.nu = 2*np.pi - self.nu
-
         self.r_impact_perifocal = np.array([np.cos(self.nu), 
                                             np.sin(self.nu), 
                                             0])
@@ -222,7 +220,6 @@ class Satellite:
             self.time_of_flight = math.sqrt( (1/self.lamda)**3 ) * ( 2*math.pi + ( self.E - np.linalg.norm(self.e)*np.sin(self.E) ) - ( self.E_0 - np.linalg.norm(self.e)*np.sin(self.E_0) ) )  
 
         else:
-            print("this fires")
             self.time_of_flight = math.sqrt( (1/self.lamda)**3 ) * ( ( self.E - np.linalg.norm(self.e)*np.sin(self.E) ) - ( self.E_0 - np.linalg.norm(self.e)*np.sin(self.E_0) ) )
 
     def _time_of_flight_parabolic(self):
@@ -271,7 +268,7 @@ class Satellite:
             print("position at impact [ %.4f, %.4f, %.4f ]" % (self.r[0], self.r[1], self.r[2]))
             print("velocity at impact [ %.4f, %.4f, %.4f ]" % (self.v[0], self.v[1], self.v[2]))
             
-            print("time till impact is %s" % (datetime.timedelta(seconds=self.time_of_flight*TU_TO_SEC)))
+            print("time till impact is %s" % (datetime.timedelta(seconds=abs(self.time_of_flight)*TU_TO_SEC)))
             print("change in true anomaly is %.4f" % (math.degrees(self.d_nu)))
         
         else:
