@@ -124,7 +124,7 @@ class Kepler():
         else:
             sys.exit("trajectory type not supported")
 
-    def _update_c_and_z(self):
+    def _update_c_and_s(self):
 
         # updating z
         self.z_n = self.x_n**2 * self.lamda
@@ -210,7 +210,7 @@ class Kepler():
 
         while True:
 
-            self._update_c_and_z()
+            self._update_c_and_s()
             self._solve_for_t_n()
             self._calculate_t_error()
 
