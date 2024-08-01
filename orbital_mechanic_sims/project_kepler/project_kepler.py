@@ -185,6 +185,7 @@ class Kepler():
 
     def _f_and_g_check(self):
 
+        # only used for debugging
         print("this should be equal to 1: f*g_p - f_p*g = %.5f" % ( self.f*self.g_p - self.f_p*self.g ))
 
     def _energy_check(self):
