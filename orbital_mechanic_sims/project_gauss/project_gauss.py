@@ -27,15 +27,11 @@ class Gauss:
         if self.dm == -1:
             self.d_nu = 2*np.pi - self.d_nu
 
-        if abs(self.d_nu) < 1e-3:
-            self.A = self.dm * np.sqrt( np.linalg.norm(self.r_1)*np.linalg.norm(self.r_2) * ( 1 + np.cos(self.d_nu) ) )
-
-        else:
-            self.A = ( np.sqrt(np.linalg.norm(self.r_1)*np.linalg.norm(self.r_2)) * np.sin(self.d_nu) ) / np.sqrt( 1 - np.cos(self.d_nu) )
+        self.A = self.dm * np.sqrt( np.linalg.norm(self.r_1)*np.linalg.norm(self.r_2) * ( 1 + np.cos(self.d_nu) ) )
 
     def _init_z(self):
         
-        self.z_n = np.random.uniform(-0.5, 0.5)
+        self.z_n = 0
 
     def _update_c_and_s(self):
 
@@ -59,13 +55,13 @@ class Gauss:
 
     def _update_c_p_and_s_p(self):
 
-        if 0 <= self.z_n and abs(self.z_n) < 1e-3:
+        if 0 <= self.z_n and abs(self.z_n) < 1e-4 :
             self.c_p_n = ( 1 / math.factorial(4) ) + ( (2*self.z_n) / math.factorial(6) ) - (( 3*self.z_n**2 ) / math.factorial(8) ) + ( ( 4*self.z_n**3 ) / math.factorial(10) )
             self.s_p_n = ( 1 / math.factorial(5) ) + ( (2*self.z_n) / math.factorial(7) ) - (( 3*self.z_n**2 ) / math.factorial(9) ) + ( ( 4*self.z_n**3 ) / math.factorial(11) )
 
         else:
-            self.c_p_n = ( 1 / 2*self.z_n) * ( 1 - self.z_n*self.s_n - 2*self.c_n )
-            self.s_p_n = ( 1 / 2*self.z_n) * ( self.c_n - 3*self.s_n )
+            self.c_p_n = ( 1 / (2*self.z_n)) * ( 1 - self.z_n*self.s_n - 2*self.c_n )
+            self.s_p_n = ( 1 / (2*self.z_n)) * ( self.c_n - 3*self.s_n )
 
     def _update_y(self):
         
@@ -87,14 +83,14 @@ class Gauss:
     def _calculate_t_error(self):
         
         if 1 <= self.t and self.t <= 10e6:
-            self.t_error = abs( (self.t - self.t_n) / self.t )
+            self.t_error = abs(self.t - self.t_n) / self.t 
 
         else:
-            self.t_error = abs( self.t - self.t_n )
+            self.t_error = self.t - self.t_n
 
     def _update_z(self):
-        
-        self.z_n += (self.t - self.t_n) / self.dt_n
+    
+        self.z_n += ( self.t - self.t_n )
 
     def _solve_for_v1_and_v2(self):
 
@@ -159,7 +155,7 @@ class Gauss:
 
                 return
 
-            elif self.counter >= 50:
+            elif self.counter >= 1000:
                 print("gauss problem did not converge")
                 return
 
@@ -179,6 +175,5 @@ if __name__ == "__main__":
 
     gauss = Gauss()
     
-    #gauss.gauss_problem(test_case_r1[test_case_idx], test_case_r2[test_case_idx], test_case_t[test_case_idx], test_case_dm[test_case_idx])
+    gauss.gauss_problem(test_case_r1[test_case_idx], test_case_r2[test_case_idx], test_case_t[test_case_idx], test_case_dm[test_case_idx])
     
-    gauss.gauss_problem([0.5, 0.6, 0.7], [0, 1, 0], 0.9667663, 1)
