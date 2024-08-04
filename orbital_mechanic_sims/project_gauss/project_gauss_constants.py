@@ -18,6 +18,10 @@ GRAVITATIONAL_PARAMETER = 1
 TU_TO_SEC = (1 / 1.239446309e-3)
 
 
+###### Software constants ######
+MAX_ITERATIONS = 1000
+
+
 ###### Testcases ######
 test_case_r1 = [ [0.5, 0.6, 0.7],
                  [0.3, 0.7, 0.4],

@@ -20,6 +20,59 @@ class Gauss:
     def __init__(self):
         pass
 
+    def _find_orbital_parameters(self):
+
+        # angular momentum
+        self.h = np.cross(self.r_1, self.v_1)
+
+        # semi-latus rectus 
+        self.p = np.linalg.norm(self.h)**2
+
+        # eccentricity
+        self.e = (np.linalg.norm(self.v_1)**2 - (1/np.linalg.norm(self.r_1))) * self.r_1 - np.dot(self.r_1, self.v_1) * self.v_1
+
+        # semi-major axis -> 1 / a = lamda
+        self.lamda = ( 1 - np.linalg.norm(self.e)**2 ) / self.p
+
+        # inclination
+        self.i = np.arccos( self.h[k_index] / np.linalg.norm(self.h) )
+
+        # node vector
+        self.n = np.cross(k_unit, self.h)
+
+        # longitude of ascending node 
+        if abs(np.linalg.norm(self.n)) < 1e-5:
+            # ascending node is undefined
+            self.omega = 0
+
+        else:
+            self.omega = np.arccos( self.n[i_index] / np.linalg.norm(self.n) )
+
+            if self.n[j_index] < 0:
+                self.omega = 2 * np.pi - self.omega
+
+        # argument of perigee
+        if abs(np.linalg.norm(self.n)) < 1e-5 or abs(np.linalg.norm(self.e)) < 1e-5:
+            # argument of perigee undefined
+            self.w = 0
+
+        else:
+            self.w = np.arccos( np.dot(self.n, self.e) / ( np.linalg.norm(self.n)*np.linalg.norm(self.e) ) )    
+
+            if self.e[k_index] < 0:
+                self.w = 2 * np.pi - self.w
+
+        # True anomaly
+        if abs(np.linalg.norm(self.e)) < 1e-5:
+            # circular orbit
+            self.nu_0 = np.dot(self.r_1, self.v_1) / (np.linalg.norm(self.r_1)*np.linalg.norm(self.v_1))
+
+        else:
+            self.nu_0 = np.arccos( np.dot(self.e, self.r_1) / ( np.linalg.norm(self.e)*np.linalg.norm(self.r_1) ) )
+
+        if np.dot(self.r_1, self.v_1) < 0:
+                self.nu_0 = 2 * math.pi - self.nu_0
+
     def _evaluate_A(self):
 
         self.d_nu = np.arccos( (np.dot(self.r_1, self.r_2) / (np.linalg.norm(self.r_1)*np.linalg.norm(self.r_2))) )
@@ -73,30 +126,30 @@ class Gauss:
 
     def _solve_for_t_n(self):
         
-        self.t_n = self.x_n**3 * self.s_n + self.A * np.sqrt(self.y_n)
+        self.t_n = (self.x_n**3) * self.s_n + self.A * np.sqrt(self.y_n)
 
     def _solve_for_dt_n(self):
         
         # dt_n is short for dt_n/dz_n
-        self.dt_n = self.x_n**3 * ( self.s_p_n - (( 3*self.s_n*self.c_p_n ) / ( 2*self.c_n )) ) +  ( self.A/8 ) * ( (3*self.s_n*np.sqrt(self.y_n))/self.c_n + self.A/self.x_n )
+        self.dt_n = (self.x_n**3) * ( self.s_p_n - (( 3*self.s_n*self.c_p_n ) / ( 2*self.c_n )) ) +  ( self.A/8 ) * ( (3*self.s_n*np.sqrt(self.y_n))/self.c_n + self.A/self.x_n )
 
     def _calculate_t_error(self):
         
         if 1 <= self.t and self.t <= 10e6:
-            self.t_error = abs(self.t - self.t_n) / self.t 
+            self.t_error = (self.t - self.t_n) / self.t 
 
         else:
             self.t_error = self.t - self.t_n
 
     def _update_z(self):
     
-        self.z_n += ( self.t - self.t_n )
+        self.z_n += self.t_error / self.dt_n
 
     def _solve_for_v1_and_v2(self):
 
-        self.f = 1 - self.y_n / np.linalg.norm(self.r_1)
+        self.f = 1 - (self.y_n / np.linalg.norm(self.r_1))
         self.g = self.A * np.sqrt( self.y_n  )
-        self.g_p = 1 - self.y_n / np.linalg.norm(self.r_2)
+        self.g_p = 1 - (self.y_n / np.linalg.norm(self.r_2))
 
         self.v_1 = ( self.r_2 - self.f*self.r_1 ) / self.g
 
@@ -115,13 +168,13 @@ class Gauss:
         self.E_1 = (np.linalg.norm(self.v_1)**2 / 2) - (1 / np.linalg.norm(self.r_1)) 
         self.E_2 = (np.linalg.norm(self.v_2)**2 / 2) - ( 1 / np.linalg.norm(self.r_2))
 
-        print("E_0 = %f, E = %f" % (self.E_1, self.E_2))
+        print("E_1 = %f, E_2 = %f" % (self.E_1, self.E_2))
 
         # angular momentum comparison
         self.h_1 = np.cross(self.r_1, self.v_1)
         self.h_2 = np.cross(self.r_2, self.v_2)
 
-        print("h_0 = %f, h = %f" % ( np.linalg.norm(self.h_1), np.linalg.norm(self.h_2) ))
+        print("h_1 = %f, h_2 = %f" % ( np.linalg.norm(self.h_1), np.linalg.norm(self.h_2) ))
 
     def gauss_problem(self, r_1, r_2, t, dm):
 
@@ -131,6 +184,10 @@ class Gauss:
         self.dm = dm
 
         self._evaluate_A()
+
+        if abs(self.d_nu-np.pi) <= 10e-3:
+            print("error: orbit not uniquely defined -> d_nu = pi")
+
         self._init_z()
 
         self.counter = 0
@@ -139,11 +196,16 @@ class Gauss:
 
             self._update_c_and_s()
             self._update_y()
+
+            if self.y_n <=0:
+                print("error: imaginary y_n")
+                return
+
             self._update_x()
             self._solve_for_t_n()
             self._calculate_t_error()
 
-            if self.t_error < 10e-6:
+            if abs(self.t_error) < 10e-6:
                 # solution converged
                 self._solve_for_v1_and_v2()
 
@@ -155,7 +217,7 @@ class Gauss:
 
                 return
 
-            elif self.counter >= 1000:
+            elif self.counter >= MAX_ITERATIONS:
                 print("gauss problem did not converge")
                 return
 
