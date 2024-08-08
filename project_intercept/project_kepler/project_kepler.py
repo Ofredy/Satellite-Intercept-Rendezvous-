@@ -12,19 +12,13 @@ import math
 import numpy as np
 
 # Our imports
-from project_kepler_constants import *
+from project_kepler.project_kepler_constants import *
 
 
 class Kepler():
 
-    def __init__(self, r_0, v_0, t):
-        
-        self.r_0 = np.array(r_0)
-        self.v_0 = np.array(v_0)
-        self.t = t
-
-        self._find_orbital_parameters()
-        self._find_trajectory_type()
+    def __init__(self):
+        pass
 
     def _find_orbital_parameters(self):
 
@@ -204,7 +198,14 @@ class Kepler():
 
         print("h_0 = %f, h = %f" % ( np.linalg.norm(self.h_0), np.linalg.norm(self.h) ))
 
-    def kepler_problem(self):
+    def kepler_problem(self, r_0, v_0, t):
+
+        self.r_0 = np.array(r_0)
+        self.v_0 = np.array(v_0)
+        self.t = t
+
+        self._find_orbital_parameters()
+        self._find_trajectory_type()
 
         self._init_x()
         self.counter = 0
@@ -219,27 +220,21 @@ class Kepler():
                 # solution converged
                 self._solve_for_r_and_v()
 
-                print("solution converged")
-                print("position is [ %.8f, %.8f, %.8f ]" % (self.r[0], self.r[1], self.r[2]))
-                print("velocity is [ %.8f, %.8f, %.8f ]" % (self.v[0], self.v[1], self.v[2]))
-                self._f_and_g_check()
-                self._energy_check()
-                return
+                return self.r, self.v
 
             elif self.counter >= 50:
                 print("kepler problem did not converge")
-                return
+
+                return None, None
 
             self._solve_for_dt_n()
             self._update_x()
             self.counter += 1
-
-            self._step_summary()
 
 
 if __name__ == "__main__":
 
     test_case_idx = 1
 
-    satellite = Kepler( test_case_positions[test_case_idx], test_case_velocities[test_case_idx], test_case_t[test_case_idx] )
-    satellite.kepler_problem()
+    satellite = Kepler()
+    satellite.kepler_problem(test_case_positions[test_case_idx], test_case_velocities[test_case_idx], test_case_t[test_case_idx])

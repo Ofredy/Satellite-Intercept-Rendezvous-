@@ -10,8 +10,8 @@
 import numpy as np
 
 # Our imports
-from project_site_and_track_constants import *
-from project_site import Site
+from project_site_and_track.project_site_and_track_constants import *
+from project_site_and_track.project_site import Site
 
 
 class Track():
@@ -58,6 +58,8 @@ class Track():
         self.r_satellite = r_site + self.r_satellite_rel_site
 
         self.v_satellite = self.v_satellite_rel_site + np.cross(EARTH_ANGULAR_VELOCITY, self.r_satellite)
+
+        return self.r_satellite, self.v_satellite
 
 
 if __name__ == "__main__":

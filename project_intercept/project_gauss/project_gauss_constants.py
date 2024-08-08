@@ -19,7 +19,7 @@ TU_TO_SEC = (1 / 1.239446309e-3)
 
 
 ###### Software constants ######
-MAX_ITERATIONS = 1000
+MAX_ITERATIONS = 750
 
 
 ###### Testcases ######

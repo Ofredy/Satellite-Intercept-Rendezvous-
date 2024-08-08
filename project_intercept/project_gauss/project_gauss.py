@@ -12,7 +12,7 @@ import math
 import numpy as np
 
 # Our imports
-from project_gauss_constants import *
+from project_gauss.project_gauss_constants import *
 
 
 class Gauss:
@@ -199,7 +199,8 @@ class Gauss:
 
             if self.y_n <=0:
                 print("error: imaginary y_n")
-                return
+
+                return None, None
 
             self._update_x()
             self._solve_for_t_n()
@@ -209,22 +210,15 @@ class Gauss:
                 # solution converged
                 self._solve_for_v1_and_v2()
 
-                print("solution converged")
-                print("v1 is [ %.4f, %.4f, %.4f ]" % (self.v_1[0], self.v_1[1], self.v_1[2]))
-                print("v2 is [ %.4f, %.4f, %.4f ]" % (self.v_2[0], self.v_2[1], self.v_2[2]))
-
-                self._energy_check()
-
-                return
+                return self.v_1, self.v_2
 
             elif self.counter >= MAX_ITERATIONS:
                 print("gauss problem did not converge")
-                return
+
+                return None, None
 
             self._update_c_p_and_s_p()
             self._solve_for_dt_n()
-
-            self._step_summary()
 
             self._update_z()
 

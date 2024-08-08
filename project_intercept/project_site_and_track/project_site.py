@@ -8,7 +8,7 @@
 import numpy as np
 
 # Our imports
-from project_site_and_track_constants import *
+from project_site_and_track.project_site_and_track_constants import *
 
 
 class Site():
@@ -63,6 +63,8 @@ class Site():
                                 ])
 
         self.v_site = np.cross(EARTH_ANGULAR_VELOCITY, self.r_site)
+
+        return self.r_site, self.v_site
 
 
 if __name__ == "__main__":
