@@ -4,10 +4,6 @@
 # be position and velocity of the site.
 
 
-# System imports
-import sys
-import math
-
 # Library imports
 import numpy as np
 
