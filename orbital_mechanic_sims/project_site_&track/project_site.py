@@ -60,12 +60,13 @@ class Site():
 
         self._compute_local_side_real_time(day, universal_time)
 
-        # Compute position in Earth-Centered Inertial (ECI) coordinates
         self.r_site = np.array([
-            self.x_site * np.cos(self.latitude) * np.cos(self.local_side_real_time),
-            self.x_site * np.cos(self.latitude) * np.sin(self.local_side_real_time),
-            self.z_site * np.sin(self.latitude)
-        ])
+                                    self.x_site * np.cos(self.latitude) * np.cos(self.local_side_real_time),
+                                    self.x_site * np.cos(self.latitude) * np.sin(self.local_side_real_time),
+                                    self.z_site * np.sin(self.latitude)
+                                ])
+
+        self.v_site = np.cross(EARTH_ANGULAR_VELOCITY, self.r_site)
 
 
 if __name__ == "__main__":
@@ -77,4 +78,4 @@ if __name__ == "__main__":
     #site.site_position_and_velocity(0, -57.296, 20901.33, 1, "0600:00")
 
     print("r_site is [ %.4f, %.4f, %.4f ]" % (site.r_site[0], site.r_site[1], site.r_site[2]))
-    print("site radius = %.4f" % (np.linalg.norm(site.r_site)))
+    print("v_site is [ %.4f, %.4f, %.4f ]" % (site.v_site[0], site.v_site[1], site.v_site[2]))    
