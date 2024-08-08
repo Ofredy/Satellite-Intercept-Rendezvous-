@@ -17,14 +17,8 @@ from project_kepler_constants import *
 
 class Kepler():
 
-    def __init__(self, r_0, v_0, t):
-        
-        self.r_0 = np.array(r_0)
-        self.v_0 = np.array(v_0)
-        self.t = t
-
-        self._find_orbital_parameters()
-        self._find_trajectory_type()
+    def __init__(self):
+        pass
 
     def _find_orbital_parameters(self):
 
@@ -204,7 +198,14 @@ class Kepler():
 
         print("h_0 = %f, h = %f" % ( np.linalg.norm(self.h_0), np.linalg.norm(self.h) ))
 
-    def kepler_problem(self):
+    def kepler_problem(self, r_0, v_0, t):
+
+        self.r_0 = np.array(r_0)
+        self.v_0 = np.array(v_0)
+        self.t = t
+
+        self._find_orbital_parameters()
+        self._find_trajectory_type()
 
         self._init_x()
         self.counter = 0
@@ -241,5 +242,5 @@ if __name__ == "__main__":
 
     test_case_idx = 1
 
-    satellite = Kepler( test_case_positions[test_case_idx], test_case_velocities[test_case_idx], test_case_t[test_case_idx] )
-    satellite.kepler_problem()
+    satellite = Kepler()
+    satellite.kepler_problem(test_case_positions[test_case_idx], test_case_velocities[test_case_idx], test_case_t[test_case_idx])
