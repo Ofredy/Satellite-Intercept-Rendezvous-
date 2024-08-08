@@ -12,7 +12,7 @@ import math
 import numpy as np
 
 # Our imports
-from project_kepler_constants import *
+from project_kepler.project_kepler_constants import *
 
 
 class Kepler():
@@ -220,22 +220,16 @@ class Kepler():
                 # solution converged
                 self._solve_for_r_and_v()
 
-                print("solution converged")
-                print("position is [ %.8f, %.8f, %.8f ]" % (self.r[0], self.r[1], self.r[2]))
-                print("velocity is [ %.8f, %.8f, %.8f ]" % (self.v[0], self.v[1], self.v[2]))
-                self._f_and_g_check()
-                self._energy_check()
-                return
+                return self.r, self.v
 
             elif self.counter >= 50:
                 print("kepler problem did not converge")
-                return
+
+                return None, None
 
             self._solve_for_dt_n()
             self._update_x()
             self.counter += 1
-
-            self._step_summary()
 
 
 if __name__ == "__main__":
