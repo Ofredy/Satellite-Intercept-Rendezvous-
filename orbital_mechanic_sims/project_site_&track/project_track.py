@@ -68,7 +68,12 @@ if __name__ == "__main__":
 
     track = Track()
 
-    track.track(504.68, 2.08, 30.7, 0.07, 105.7, 0.05, site.r_site, site.latitude, site.local_side_real_time)
+    track.track(504.68, 2.08, 30.7, 0.07, 105.6, 0.05, site.r_site, site.latitude, site.local_side_real_time)
 
-    print("r_satellite is [ %.4f, %.4f, %.4f ]" % (track.r_satellite[0], track.r_satellite[1], track.r_satellite[2]))
-    print("v_satellite is [ %.4f, %.4f, %.4f ]" % (track.v_satellite[0], track.v_satellite[1], track.v_satellite[2]))    
+    print("r_satellite is [ %.6f, %.6f, %.6f ]" % (track.r_satellite[0], track.r_satellite[1], track.r_satellite[2]))
+    print("v_satellite is [ %.6f, %.6f, %.6f ]" % (track.v_satellite[0], track.v_satellite[1], track.v_satellite[2]))    
+
+    r = np.array([.27907599, -.77518019, .63745829])
+    v = np.array( [.26347198, -.14923608, .05195238] )
+
+    import pdb; pdb.set_trace()
