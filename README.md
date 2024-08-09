@@ -6,3 +6,4 @@ Write a computer program that takes as its input radar tracking data on a target
 
 Image below shows the software architecture of the script.
 
+![alt text](blob/intercept_software_architecture.jpg?raw=true)
