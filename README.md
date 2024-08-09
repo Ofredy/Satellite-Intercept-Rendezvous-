@@ -10,5 +10,5 @@ time-of-flight. Neglect the atmosphere and assume impulsive velocity change from
 Image below shows the software architecture of the script.
 
 <p align="center">
-  <img src="https://github.com/waldyr/Sublime-Installer/blob/master/sublime_text.png?raw=true" alt="Sublime's custom image"/>
+  <img src="blob/intercept_software_architecture.jpg?raw=true" alt="Sublime's custom image"/>
 </p>
